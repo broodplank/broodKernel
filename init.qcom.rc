@@ -57,7 +57,6 @@ on boot
     mkdir /data/wpstiles/ 0777 shell
     mkdir /data/wiper 0777 location qcom_oncrpc
 
-
      # Create directories for wiper services
     mkdir /data/wpstiles/ 0777 shell
     mkdir /data/wiper 0777 location qcom_oncrpc
@@ -112,8 +111,8 @@ service cnd /system/bin/cnd
     group system radio
 
 service rmt_storage /system/bin/rmt_storage /dev/block/mmcblk0p10 /dev/block/mmcblk0p11
-	user root
-	group system
+    user root
+    group system
     disabled
 
 on property:ro.emmc=1
@@ -183,8 +182,6 @@ on property:crypto.driver.load=1
 on property:crypto.driver.load=0
      exec /system/bin/rmmod qcedev.ko
      exec /system/bin/rmmod qce.ko
-
-
 
 service qcom-post-boot /system/bin/sh /system/etc/init.qcom.post_boot.sh
     user root

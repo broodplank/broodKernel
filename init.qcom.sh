@@ -1,18 +1,15 @@
 #!/system/bin/sh
 
 # Mounts
-mount -o noatime,remount,ro rootfs /;
-mount -o noatime,remount,rw proc /proc;
-mount -o noatime,remount,rw sysfs /sys;
-mount -o noatime,remount,rw,discard,barrier=0,commit=60,noauto_da_alloc,delalloc /cache /cache;
-mount -o noatime,remount,rw,discard,barrier=0,commit=60,noauto_da_alloc,delalloc /data /data;
-mount -o noatime,remount,rw,discard,barrier=0,commit=60,noauto_da_alloc,delalloc /persist /persist;
-mount -o noatime,remount,rw,discard /system /system;
-mount -o noatime,remount,rw /dev /dev;
-mount -o noatime,remount,rw /dev/pts /dev/pts;
-mount -o noatime,remount,rw /mnt/asec /mnt/asec;
-mount -o noatime,remount,rw /mnt/obb /mnt/obb;
-mount -o noatime,remount,rw /efs /efs;
+mount -o noatime,remount,rw,discard,barrier=0,commit=60,noauto_da_alloc,delalloc,nosuid,nodev,nodiratime /cache /cache
+mount -o noatime,remount,rw,discard,barrier=0,commit=60,noauto_da_alloc,delalloc,nosuid,nodev,nodiratime /data /data
+mount -o noatime,remount,rw,discard,barrier=0,commit=60,noauto_da_alloc,delalloc,nosuid,nodev,nodiratime /persist /persist
+
+# Remount all partitions with noatime
+for k in $(busybox mount | grep relatime | cut -d " " -f3);
+do
+busybox mount -o remount,noatime $k;
+done;
 
 # Kerneltweaks
 mount -t debugfs none /sys/kernel/debug
@@ -99,8 +96,6 @@ do
 		echo 2 > $i/queue/iosched/writes_starved;
 	fi;
 done;
-
- 
 
 # Optimize SQlite databases of apps
 echo "";
