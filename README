@@ -1,0 +1,79 @@
+broodKernel (a i9001 kernel based on the latest i9001 stock kernel, but with lots of tweaks)
+http://www.broodplank.net/
+created by broodplank, Thanks to pikachu01 and skywalker01!
+Only the ramdisk and some scripts have been used to tweak the kernel.
+
+Want to build your own "broodKernel" ?
+
+1. Clone the git
+2. Watch in init.rc / init.qcom.sh (file only found on qcom devices) for tweaks, additional tweaks in /system/etc/(init.d)
+3. Don't just copy the lines without paying attention, study all lines before copy pasting them
+4. You can use WinMerge (for Windows) or diff (for Unix) to compare the files with yours
+5. Compile boot.img with your zImage and adjusted ramdisk (cpio) (I Use kitchen in cygwin)
+6. Profit I guess
+
+
+Features (v1.2):
+
+- Added Auto Mount
+-- All partitions mounted in noatime / RW
+-- Cache / Data & Persist mounted with barrier=0 / commit=60
+
+- Added AOSP bootanimation library
+- Added init.d Support (runs at the end of the boot process)
+
+- Changed Kernel Security settings
+-- ro.secure=0
+-- ro.allow.mock.location=0
+-- ro.debuggable=1
+-- persist.service.adb.enable=1
+
+- Adjusted Low Memory Killer
+-- LMK 60MB Based
+
+- Added build.prop Tweaks
+-- Smoother GUI Tweak
+-- Less Ringtone Delay
+-- GPU Rendering
+
+- Added IPv4 Tweaks
+-- Changed Buffersizes
+-- Tweaks in /sys/proc/net/core
+-- Tweaks in /sys/proc/net/ipv4
+
+- Added Touchscreen Tweaks
+-- Sensitive touch
+
+- Added Kernel Tweaks
+- Added SD-Card Tweaks
+- Added VM (writeout) Tweaks
+- Added Zipalign
+- Added Vacuum (sqlite_optimize)
+
+- Added GT-i8150 GPU Drivers
+
+- Added 00broodkernel in init.d:
+-- Set I/O Scheduler
+-- Set SDCard Readahead
+-- Enable/Disable Error Reporting
+-- Enable/Disable sysctl.conf file
+
+- Added 01screenstatescaling in init.d:
+-- Set Awake Governor & min/max freq
+-- Set Sleep Governor & min/max freq
+-- Enable/Disable Governor tweaks
+-- Option to use 01screenstatescaling as the only cpu management source (disable init.qcom.post_boot.sh)
+
+
+
+
+Versions:
+
+Current Test Build:
+v1.2 - TestBuild (master branch)
+
+Private Release: 
+v1.1 - bootlogo test
+
+First Stable Release:
+v1.0 - Initial Release
