@@ -43,6 +43,63 @@ echo 3 > /proc/sys/vm/drop_caches;
 sleep 1;
 echo 0 > /proc/sys/vm/drop_caches;
 echo "Caches are dropped!";
+
+# Optimize Non-Rotational Readahead (Thunderbolt)
+MMC=`ls -d /sys/block/mmc*`;
+
+# Optimize non-rotating storage; 
+for i in $STL $BML $MMC $ZRM $MTD;
+do
+	#IMPORTANT!
+	if [ -e $i/queue/rotational ]; 
+	then
+		echo 0 > $i/queue/rotational; 
+	fi;
+	if [ -e $i/queue/nr_requests ];
+	then
+		echo 1024 > $i/queue/nr_requests; # for starters: keep it sane
+	fi;
+	#CFQ specific
+	if [ -e $i/queue/iosched/back_seek_penalty ];
+	then 
+		echo 1 > $i/queue/iosched/back_seek_penalty;
+	fi;
+	#CFQ specific
+	if [ -e $i/queue/iosched/low_latency ];
+	then
+		echo 1 > $i/queue/iosched/low_latency;
+	fi;
+	#CFQ Specific
+	if [ -e $i/queue/iosched/slice_idle ];
+	then 
+		echo 1 > $i/queue/iosched/slice_idle; # previous: 1
+	fi;
+	#CFQ specific
+	if [ -e $i/queue/iosched/quantum ];
+	then
+		echo 8 > $i/queue/iosched/quantum;
+	fi;
+#disable iostats to reduce overhead  # idea by kodos96 - thanks !
+	if [ -e $i/queue/iostats ];
+	then
+		echo "0" > $i/queue/iostats;
+	fi;
+# Optimize for read- & write-throughput; 
+# Optimize for readahead; 
+	if [ -e $i/queue/read_ahead_kb ];
+	then
+		echo "256" >  $i/queue/read_ahead_kb;
+	fi;
+done;
+# Specifically for NAND devices where reads are faster than writes, writes starved 2:1 is good
+for i in $STL $BML $ZRM $MTD;
+do
+	if [ -e $i/queue/iosched/writes_starved ];
+	then
+		echo 2 > $i/queue/iosched/writes_starved;
+	fi;
+done;
+
  
 
 # Optimize SQlite databases of apps
