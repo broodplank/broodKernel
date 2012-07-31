@@ -1,0 +1,82 @@
+#!/system/bin/sh
+# Created by broodplank1337
+# broodKernel v1.2
+# Test Build
+ 
+# =================================== #
+# broodKernel v1.2 Configuration File #
+# =================================== #
+
+# =================================== #
+# >>> Available Settings <<<          #
+# =================================== #
+#
+# - Set I/O Scheduler
+# - Set SDCARD Readahead
+# - Enable/Disable Error Reporting
+# - Enable/Disable sysctl.conf file
+# - See 01screenstatescaling for (advanced) CPU Settings / Tweaks
+# 
+# =================================== #
+ 
+
+# =================================== #
+#
+# >>> I/O Scheduler <<<
+#
+	SCHEDULER="noop";  # noop/cfq 
+#
+# =================================== #
+#
+# >>> Set SDCard Read Ahead <<<
+#
+	SDCARDREADAHEAD="1024";  # 128/256/512/1024/2048/3072/4096
+#
+# =================================== #
+#
+# >>> Google Error Reporting <<<
+#
+	ERRORREPORTING="disabled";  # enabled/disabled
+#
+# =================================== # 
+#
+# >>> Sysctl.conf Support <<<
+#
+	SYSCTLSUPPORT="enabled";  # enabled/disabled
+#
+# =================================== # 
+
+
+
+
+# Execute Settings:
+
+echo $SCHEDULER > /sys/block/mmcblk0/queue/scheduler
+echo $SCHEDULER > /sys/block/mmcblk1/queue/scheduler
+
+# Error Reporting
+if [[ "$ERRORREPORTING" == "enabled" ]]
+	then 
+	setprop profiler.force_disable_err_rpt 0
+	setprop profiler.force_disable_ulog 0
+	setprop ro.config.nocheckin 0
+else
+	setprop profiler.force_disable_err_rpt 1
+	setprop profiler.force_disable_ulog 1
+	setprop ro.config.nocheckin 1
+fi;
+
+# Sysctl.conf
+if [[ "$SYSCTLSUPPORT" == "enabled" ]]
+	then 
+	sysctl -p
+else
+	busybox mv /system/etc/sysctl.conf /system/etc/sysctl.conf.disabled
+fi;
+
+
+# Readahead
+echo $SDCARDREADAHEAD > /sys/devices/virtual/bdi/179:0/read_ahead_kb;
+echo "256" > /sys/devices/virtual/bdi/179:32/read_ahead_kb;
+echo "256" > /sys/devices/virtual/bdi/default/read_ahead_kb;
+

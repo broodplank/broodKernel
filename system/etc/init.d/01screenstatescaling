@@ -1,0 +1,160 @@
+#!/system/bin/sh
+# Credits to pikachu01 and FloHimself for governor tweaks / screenstatescaling script
+# Edited by broodplank1337 to fit broodKernel v1.2
+
+# Mount
+mount -o remount rw /system
+
+# =====================================================================================
+#     >>> broodKernel v1.2 CPU Configuration File / Screenstatescaling Script >>>     #
+# =====================================================================================
+
+#   >>> Notes <<<
+#
+# - This script manages the cpu settings for awake and sleep state.
+# - Be sure not to set the max frequency lower then the min frequency.
+# - Please only use existing governors to prevent boot problems.
+# - Additional governor tweaks can be enabled for a better battery life,
+#   the governor tweaks may lower performance (only theoretical, like cpu score in Antutu)
+# - You can choose to use this file only for CPU Settings,
+#   this will modify the /system/etc/init.qcom.post_boot.sh file to not set a governor,
+#   when enabled and 01screenstatescaling is absent, your system will not boot properly
+#   settings can be restored by place this line:
+
+
+# =====================================================================================
+#   >>> Basic CPU Settings <<<	   # Please only use the values below as settings
+# =====================================================================================
+# Awake CPU Settings
+AWAKE_GOVERNOR="ondemand";         # ondemand/performance/conservative/userspace
+MIN_SPEED_AWAKE="245760";          # 122880/245760/368640
+MAX_SPEED_AWAKE="1401600";	   # 768000/806400/1024000/1200000/1401600
+
+# Sleep CPU Settings
+SLEEP_GOVERNOR="ondemand";         # ondemand/conservative/powersave
+MIN_SPEED_SLEEP="122880";          # 122880/245760/368640
+MAX_SPEED_SLEEP="245760";          # 122880/245760/368640
+
+# Governor Tweaks
+ENABLE_ONDEMAND_TWEAKS="no";       # yes/no
+ENABLE_CONSERVATIVE_TWEAKS="no";   # yes/no
+# =====================================================================================
+
+
+# =====================================================================================
+#   >>> Advanced CPU Settings <<   # Use at own risk, don't change if inexperienced.
+# =====================================================================================
+# Use 01screenstatescaling as primary CPU Management script		
+DISABLE_POSTBOOT_CPU="no";	   # yes/no (only enable if you know what you're doing!)
+# =====================================================================================
+
+
+# Execute Settings
+
+# Disable Postboot CPU Management
+if [[ "$DISABLE_POSTBOOT_CPU" == "no" ]]
+	then
+	if [ -e /system/etc/init.qcom.post_boot.sh.bak ]; then
+	 	busybox cp -f /system/etc/init.qcom.post_boot.sh.bak /system/etc/init.qcom.post_boot.sh
+	else
+		sleep 1
+	fi;
+else
+	if [ -e /system/etc/init.qcom.post_boot.sh.bak ]; then
+	 	sleep 1
+	else
+		busybox cp -f /system/etc/init.qcom.post_boot.sh /system/etc/init.qcom.post_boot.sh.bak
+		sed '33d' /system/etc/init.qcom.post_boot.sh > /sdcard/temp.sh # Remove line that sets governor
+		busybox mv -f /sdcard/temp.sh /system/etc/init.qcom.post_boot.sh
+		chmod 644 /system/etc/init.qcom.post_boot.sh
+		chown root:root /system/etc/init.qcom.post_boot.sh
+	fi;
+fi;
+
+
+# Ondemand Tweaks
+if [[ "$ENABLE_ONDEMAND_TWEAKS" == "yes" ]]
+	then
+	if [ -e /sys/devices/system/cpu/cpu0/cpufreq/ondemand/up_threshold ]; then
+		echo "95" > /sys/devices/system/cpu/cpu0/cpufreq/ondemand/up_threshold;
+		echo "5" > /sys/devices/system/cpu/cpu0/cpufreq/ondemand/down_differential;
+		#echo "0" > /sys/devices/system/cpu/cpu0/cpufreq/ondemand/io_is_busy;
+		echo "1" > /sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_down_factor;
+		echo "100000" > /sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_rate;
+	fi;
+	if [ -e /sys/devices/system/cpu/cpufreq/ondemand/up_threshold ]; then
+		echo "95" > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold;
+		echo "5" > /sys/devices/system/cpu/cpufreq/ondemand/down_differential;
+		#echo "0" > /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy;
+		echo "1" > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor;
+		echo "100000" > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate;
+	fi;
+else
+	sleep 1
+fi;
+
+
+# Conservative Tweaks
+if [[ "$ENABLE_CONVERVATIVE_TWEAKS" == "yes" ]]
+	then
+	if [ -e /sys/devices/system/cpu/cpu0/cpufreq/conservative/up_threshold ]; then
+		echo "95" > /sys/devices/system/cpu/cpu0/cpufreq/conservative/up_threshold;
+		echo "90" > /sys/devices/system/cpu/cpu0/cpufreq/conservative/down_threshold; # 35 # 12 # 30 (higher will lead to noticable lags) # 35 # screen off: # 50 ## 35
+        	echo "20" > /sys/devices/system/cpu/cpu0/cpufreq/conservative/freq_step; # more aggressive ramping up (50) # screen off: # 10
+		echo "1" > /sys/devices/system/cpu/cpu0/cpufreq/conservative/sampling_down_factor;
+		echo "100000" > /sys/devices/system/cpu/cpu0/cpufreq/conservative/sampling_rate;
+	fi;
+	if [ -e /sys/devices/system/cpu/cpufreq/conservative/up_threshold ]; then
+
+		echo "95" > /sys/devices/system/cpu/cpufreq/conservative/up_threshold;
+		echo "90" > /sys/devices/system/cpu/cpufreq/conservative/down_threshold; # 35 # 12 # 30 (higher will lead to noticable lags) # 35 # screen off: # 50 ## 35
+        	echo "20" > /sys/devices/system/cpu/cpufreq/conservative/freq_step; # more aggressive ramping up (50) # screen off: # 10
+		echo "1" > /sys/devices/system/cpu/cpufreq/conservative/sampling_down_factor;
+		echo "100000" > /sys/devices/system/cpu/cpufreq/conservative/sampling_rate;
+	fi;
+else
+	sleep 1
+fi;
+
+
+
+
+# Screenstatescaling loop
+
+
+(while [ 1 ];
+do
+
+
+
+# ==============================================================
+# settings for while the screen is on / usage
+# ==============================================================
+
+    AWAKE=`cat /sys/power/wait_for_fb_wake`;
+    if [ $AWAKE = "awake" ]; then
+	sleep 2
+        log -p i -t screenstate_scaling "State: Awake, switching CPU governor to -> $AWAKE_GOVERNOR"
+        echo $AWAKE_GOVERNOR > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor;
+        echo $MIN_SPEED_AWAKE > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq;
+        echo $MAX_SPEED_AWAKE > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq;
+    fi;
+
+
+
+# ==============================================================
+# settings for while the screen is off
+# ==============================================================
+
+
+    SLEEPING=`cat /sys/power/wait_for_fb_sleep`;
+    if [ $SLEEPING = "sleeping" ]; then
+        sleep 2
+ 	log -p i -t screenstate_scaling "State: Sleeping, switching CPU governor to -> $SLEEP_GOVERNOR"
+  	echo $SLEEP_GOVERNOR > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor;
+        echo $MIN_SPEED_SLEEP > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq;
+        echo $MAX_SPEED_SLEEP > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq;
+    fi;    
+
+done &);
+
